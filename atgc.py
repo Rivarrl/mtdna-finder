@@ -6,10 +6,13 @@
 # ======================================
 from collections import defaultdict
 from copy import deepcopy
+import time
+import os
 
 # mod = 2 ** 32
 # 预先试出来的最大序列长度
 max_ws = 13
+min_ws = 2
 # 四进制
 a = 4
 # A:0,T:1,G:2,C:3
@@ -23,8 +26,10 @@ f.close()
 dna = [atgc_dict[c] for c in mtdna]
 rdna = dna[::-1]
 N = len(dna)
+result_path = 'result'
+if not os.path.exists('./' + result_path): os.mkdir(result_path)
 
-import time
+
 def timeit(f):
     # 测试运行时间用
     def wrapper(*args, **kwargs):
@@ -149,36 +154,35 @@ def generate_pairs(seen, ws):
                 pairs += [[i, mirror_i(j+ws)]]
     return pairs
 
-
-def exclusion_ban():
+@timeit
+def exclusion_and_output():
     ban = defaultdict(int)
     curban = defaultdict(int)
-    exclusion_pairs = defaultdict(list)
     dxy = ((-1, 0, -1, 0), (-1, 0, 0, 1), (0, 1, -1, 0), (0, 1, 0, 1))
-    for ws in range(max_ws, 1, -1):
+    for ws in range(max_ws, min_ws-1, -1):
         seen_filter = filter_finder(ws)
         pairs = generate_pairs(seen_filter, ws)
         curban.clear()
+        exclusion_pairs = []
         for s1, s2 in pairs:
             da = (s1, s1 + ws, s2, s2 + ws)
             for e in dxy:
                 if (da[i] + e[i] for i in range(4)) in ban: break
             else:
-                exclusion_pairs[ws].append([s1, s2])
+                exclusion_pairs.append("{:6d}\t{:6d}\n".format(s1, s2))
             curban[da] = ws
+        with open('./{}/{}.txt'.format(result_path, ws), 'w', encoding='utf-8') as f:
+            f.writelines(exclusion_pairs)
         print(ws, 'Done')
+        if ws == min_ws: break
+        ban.clear()
         ban = deepcopy(curban)
-    return exclusion_pairs
 
 # TODO: ws=3时，[1,10] 和 [1,11]需不需要去重？
 # ws = 12
 # seen_filter = filter_finder(ws)
 # pairs = generate_pairs(seen_filter, ws)
 # matrix_pretty_print(pairs)
-exclusion_pairs = exclusion_ban()
-for ws, pairs in exclusion_pairs.items():
-    print(ws)
-    for x, rx in pairs:
-        print(x, rx)
+exclusion_and_output()
 
 # TODO: ws=8时划分的边界似乎对ws<7的部分没有起作用。
