@@ -158,6 +158,7 @@ def generate_pairs(seen, ws):
 def exclusion_and_output():
     ban = defaultdict(int)
     dxy = ((-1, 0, -1, 0), (-1, 0, 0, 1), (0, 1, -1, 0), (0, 1, 0, 1))
+
     for ws in range(max_ws, min_ws-1, -1):
         seen_filter = filter_finder(ws)
         pairs = generate_pairs(seen_filter, ws)
@@ -165,7 +166,7 @@ def exclusion_and_output():
         for s1, s2 in pairs:
             da = (s1, s1 + ws, s2, s2 + ws)
             for e in dxy:
-                if (da[i] + e[i] for i in range(4)) in ban: break
+                if tuple(da[i] + e[i] for i in range(4)) in ban: break
             else:
                 exclusion_pairs.append("{:6d}\t{:6d}\n".format(s1, s2))
             if ws == min_ws: continue
