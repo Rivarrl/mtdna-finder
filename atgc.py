@@ -157,12 +157,10 @@ def generate_pairs(seen, ws):
 @timeit
 def exclusion_and_output():
     ban = defaultdict(int)
-    curban = defaultdict(int)
     dxy = ((-1, 0, -1, 0), (-1, 0, 0, 1), (0, 1, -1, 0), (0, 1, 0, 1))
     for ws in range(max_ws, min_ws-1, -1):
         seen_filter = filter_finder(ws)
         pairs = generate_pairs(seen_filter, ws)
-        curban.clear()
         exclusion_pairs = []
         for s1, s2 in pairs:
             da = (s1, s1 + ws, s2, s2 + ws)
@@ -170,13 +168,11 @@ def exclusion_and_output():
                 if (da[i] + e[i] for i in range(4)) in ban: break
             else:
                 exclusion_pairs.append("{:6d}\t{:6d}\n".format(s1, s2))
-            curban[da] = ws
+            if ws == min_ws: continue
+            ban[da] = ws
         with open('./{}/{}.txt'.format(result_path, ws), 'w', encoding='utf-8') as f:
             f.writelines(exclusion_pairs)
         print(ws, 'Done')
-        if ws == min_ws: break
-        ban.clear()
-        ban = deepcopy(curban)
 
 # TODO: ws=3时，[1,10] 和 [1,11]需不需要去重？
 # ws = 12
