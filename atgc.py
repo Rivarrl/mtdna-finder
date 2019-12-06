@@ -193,9 +193,9 @@ def exclusion_and_output_v2():
             f.writelines(exclusion_pairs)
         print(ws, 'Done')
 
-
-# ws = 12
-# seen_filter = filter_finder(ws)
-# pairs = generate_pairs(seen_filter, ws)
-# matrix_pretty_print(pairs)
-exclusion_and_output_v2()
+if __name__ == '__main__':
+    # ws = 12
+    # seen_filter = filter_finder(ws)
+    # pairs = generate_pairs(seen_filter, ws)
+    # matrix_pretty_print(pairs)
+    exclusion_and_output_v2()
