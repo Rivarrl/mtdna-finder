@@ -6,7 +6,7 @@
 # ======================================
 import pickle
 import os
-
+from atgc import timeit
 # 验证程序
 
 class DoubleArea:
@@ -20,9 +20,16 @@ class DoubleArea:
         distance = self.l - other.l
         return other.x - self.x < distance and other.y - self.y < distance
 
+def include(self, sl, other, ol):
+    if sl <= ol or self[0] > other[0] or self[1] > other[1]: return False
+    distance = sl - ol
+    return other[0] - self[0] < distance and other[1] - self[1] < distance
+
+
 pk_dir_name = 'pickle'
 pk_dir = './' + pk_dir_name
 
+@timeit
 def validation(start=2, rewrite=False, stop_point='v'):
     # 写入pickle
     if not os.path.exists(pk_dir): os.mkdir(pk_dir_name)
@@ -34,7 +41,7 @@ def validation(start=2, rewrite=False, stop_point='v'):
             while line:
                 stline = [e.strip() for e in line.split(' ') if e.strip()]
                 p_start, q_start = map(int, stline)
-                pk.add(DoubleArea(p_start, q_start, fn))
+                pk.add((p_start, q_start))
                 line = f.readline().strip()
         with open(pk_dir + '/{}.pkl'.format(fn), 'wb') as f:
             pickle.dump(pk, f)
@@ -55,9 +62,11 @@ def validation(start=2, rewrite=False, stop_point='v'):
         for ofn in range(fn + 1, 14):
             for other in pk[ofn]:
                 for da in pk[fn]:
-                    if other.include(da):
+                    if include(other, ofn, da, fn):
                         # print('找到')
-                        error_dict[other].add(da)
+                        p, q = other + (ofn, ), da + (fn, )
+                        error_dict[p].add(q)
+        print(fn, 'Done')
         pk.pop(fn)
 
     # 保存验证结果
@@ -75,5 +84,5 @@ def show():
                 print("[{}: {}, {}] -> [{}: {}, {}]".format(p.l, p.x, p.y, q.l, q.x, q.y))
 
 if __name__ == '__main__':
-    validation()
+    validation(start=5)
     show()
