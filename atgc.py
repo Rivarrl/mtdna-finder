@@ -157,7 +157,7 @@ def generate_pairs(seen, ws):
 @timeit
 def exclusion_and_output():
     ban = defaultdict(int)
-    dxy = ((-1, 0, -1, 0), (-1, 0, 0, 1), (0, 1, -1, 0), (0, 1, 0, 1))
+    dxy = ((0, 0, 0, 0), (-1, 0, -1, 0), (-1, 0, 0, 1), (0, 1, -1, 0), (0, 1, 0, 1))
 
     for ws in range(max_ws, min_ws-1, -1):
         seen_filter = filter_finder(ws)
@@ -175,11 +175,27 @@ def exclusion_and_output():
             f.writelines(exclusion_pairs)
         print(ws, 'Done')
 
-# TODO: ws=3时，[1,10] 和 [1,11]需不需要去重？
+@timeit
+def exclusion_and_output_v2():
+    ban = {i:set() for i in range(2, 14)}
+    for ws in range(max_ws, min_ws-1, -1):
+        seen_filter = filter_finder(ws)
+        pairs = generate_pairs(seen_filter, ws)
+        exclusion_pairs = []
+        for s1, s2 in pairs:
+            if (s1, s2) in ban[ws]: continue
+            exclusion_pairs.append("{:6d}\t{:6d}\n".format(s1, s2))
+            for window in range(2, ws):
+                for i in range(ws-window+1):
+                    for j in range(ws-window+1):
+                        ban[window].add((s1+i, s2+j))
+        with open('./{}/{}.txt'.format(result_path, ws), 'w', encoding='utf-8') as f:
+            f.writelines(exclusion_pairs)
+        print(ws, 'Done')
+
+
 # ws = 12
 # seen_filter = filter_finder(ws)
 # pairs = generate_pairs(seen_filter, ws)
 # matrix_pretty_print(pairs)
-exclusion_and_output()
-
-# TODO: ws=8时划分的边界似乎对ws<7的部分没有起作用。
+exclusion_and_output_v2()
